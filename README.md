@@ -1,5 +1,5 @@
 # AutoSave
-AutoSave is a mod for Green Hell that will automatically save game every 10 minutes.
+AutoSave is a mod for __Green Hell__ that will automatically save game every 10 minutes.
 
 __This mod will only work if you are the host, or if you are in singleplayer mode.__
 
