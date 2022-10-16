@@ -1,9 +1,16 @@
-# AutoSave
-AutoSave is a mod for __Green Hell__ that will automatically save game every 10 minutes.
+# AutomaticSaves
 
-__This mod will only work if you are the host, or if you are in singleplayer mode.__
+__This mod is the new version of the old "AutoSave" mod.__
+If you still have the old "AutoSave" mod please delete it before using this one.
 
-- You can switch the feature OFF or ON at runtime by using a shortcut (__NumPad7__ by default).
-- You can change save frequency in seconds inside the file "__[...]/steamapps/common/Green Hell/Mods/AutoSave.txt__" (note that you need to run this mod once for this file to be created).
+----
 
-You can contact me on Discord if needed (*OSubMarin#0460*).
+## Description:
+
+This mod allows you to automatically save game every 10 minutes.
+
+You can modify saves frequency and turn the feature OFF or ON at runtime.
+
+Simply press the shortcut key to open the settings window (by default it is __NumPad7__).
+
+Note that this mod will only work if you are the host or in singleplayer mode.
