@@ -422,7 +422,7 @@ namespace AutomaticSaves
                 }
                 else
                     File.WriteAllText(AutoSaveConfigurationFile, (IsEnabled ? "true" : "false") + "\r\n" + Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture) + "\r\n", System.Text.Encoding.UTF8);
-                ModAPI.Log.Write($"[{ModName}:LoadSettings] Settings were loaded. Feature enabled: {(IsEnabled ? "true" : "false")}. Saves frequency: {Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture)} seconds).");
+                ModAPI.Log.Write($"[{ModName}:LoadSettings] Settings were loaded (Feature enabled: {(IsEnabled ? "true" : "false")}. Saves frequency: {Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture)} seconds).");
             }
             catch (Exception ex)
             {
@@ -436,7 +436,7 @@ namespace AutomaticSaves
             {
                 string savesFrequency = Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture);
                 File.WriteAllText(AutoSaveConfigurationFile, (IsEnabled ? "true" : "false") + "\r\n" + savesFrequency + "\r\n", System.Text.Encoding.UTF8);
-                ModAPI.Log.Write($"[{ModName}:SaveSettings] Settings were updated. Feature enabled: {(IsEnabled ? "true" : "false")}. Saves frequency: {savesFrequency} seconds).");
+                ModAPI.Log.Write($"[{ModName}:SaveSettings] Settings were updated (Feature enabled: {(IsEnabled ? "true" : "false")}. Saves frequency: {savesFrequency} seconds).");
             }
             catch (Exception ex)
             {
