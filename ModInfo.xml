@@ -1,22 +1,18 @@
-<Mod ID="AutoSave">
+<Mod ID="AutomaticSaves">
   <Compatible>2.3.5</Compatible>
-  <Button Standard="NumPad7" ID="AutoSave">
+  <Button Standard="NumPad7" ID="AutomaticSaves">
     <Name>
-      <EN>On/Off switch</EN>
-      <FR>Sauvegardes auto ON/OFF</FR>
+      <EN>Show settings</EN>
     </Name>
     <Description>
-      <EN>This key will allow you to disable (or enable) the automatic save feature.</EN>
-      <FR>Ce raccourcis vous permet de désactiver (ou d'activer) les sauvegardes automatiques.</FR>
+      <EN>This key will allow you to display the settings window.</EN>
     </Description>
   </Button>
   <Name>
-    <EN>AutoSave</EN>
-    <FR>AutoSave</FR>
+    <EN>AutomaticSaves</EN>
   </Name>
   <Description>
-    <EN>AutoSave is a mod for Green Hell that will automatically save game every 10 minutes. You can change frequency in seconds in file "steamapps/common/Green Hell/Mods/AutoSave.txt" (note that you need to run this mod once for this file to be created). Author: OSubMarin</EN>
-    <FR>AutoSave est un mod pour Green Hell qui sauvegarde la partie toutes les 10 minutes. Vous pouvez modifier la fréquence des sauvegardes (en secondes) dans le fichier "steamapps/common/Green Hell/Mods/AutoSave.txt" (notez que vous devez démarrer le jeu avec ce mod une première fois afin que le fichier soit créé). Auteur : OSubMarin</FR>
+    <EN>AutomaticSaves is a mod for Green Hell that will automatically save game every 10 minutes. You can change frequency in seconds and turn the feature OFF or ON at runtime. Author: OSubMarin</EN>
   </Description>
   <Version>1.0.0.2</Version>
 </Mod>

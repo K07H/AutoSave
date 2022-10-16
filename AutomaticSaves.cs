@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
-namespace AutoSave
+namespace AutomaticSaves
 {
-    /// <summary>AutoSave is a mod for Green Hell that will automatically save game every 10 minutes.</summary>
-    public class AutoSave : MonoBehaviour
+    /// <summary>AutomaticSaves is a mod for Green Hell that will automatically save game every 10 minutes.</summary>
+    public class AutomaticSaves : MonoBehaviour
     {
         #region Enums
 
@@ -25,21 +22,21 @@ namespace AutoSave
 
         #region Constructors/Destructor
 
-        public AutoSave()
+        public AutomaticSaves()
         {
             Instance = this;
         }
 
-        private static AutoSave Instance;
+        private static AutomaticSaves Instance;
 
-        public static AutoSave Get() => AutoSave.Instance;
+        public static AutomaticSaves Get() => AutomaticSaves.Instance;
 
         #endregion
 
         #region Attributes
 
         /// <summary>The name of this mod.</summary>
-        private static readonly string ModName = nameof(AutoSave);
+        private static readonly string ModName = nameof(AutomaticSaves);
 
         /// <summary>Game saving frequency (in seconds).</summary>
         private static long AutoSaveEvery = 600L;
@@ -51,10 +48,10 @@ namespace AutoSave
         /// <summary>Path to ModAPI runtime configuration file (contains game shortcuts).</summary>
         private static readonly string RuntimeConfigurationFile = Path.Combine(Application.dataPath.Replace("GH_Data", "Mods"), "RuntimeConfiguration.xml");
 
-        /// <summary>Path to AutoSave mod configuration file (if it does not already exist it will be automatically created on first run).</summary>
+        /// <summary>Path to AutomaticSaves mod configuration file (if it does not already exist it will be automatically created on first run).</summary>
         private static readonly string AutoSaveConfigurationFile = Path.Combine(Application.dataPath.Replace("GH_Data", "Mods"), "AutoSave.txt");
 
-        /// <summary>Default shortcut to disable/enable AutoSave.</summary>
+        /// <summary>Default shortcut to disable/enable AutomaticSaves.</summary>
         private static readonly KeyCode DefaultModKeybindingId = KeyCode.Keypad7;
 
         private static KeyCode ModKeybindingId { get; set; } = DefaultModKeybindingId;
@@ -158,18 +155,18 @@ namespace AutoSave
         private static void CheckTimerAndSave()
         {
             long currTime = DateTime.Now.Ticks / 10000000L;
-            if (AutoSave.LastAutoSaveTime <= 0L)
-                AutoSave.LastAutoSaveTime = currTime;
-            else if ((currTime - AutoSave.LastAutoSaveTime) > AutoSaveEvery)
+            if (AutomaticSaves.LastAutoSaveTime <= 0L)
+                AutomaticSaves.LastAutoSaveTime = currTime;
+            else if ((currTime - AutomaticSaves.LastAutoSaveTime) > AutoSaveEvery)
             {
-                AutoSave.LastAutoSaveTime = currTime;
+                AutomaticSaves.LastAutoSaveTime = currTime;
                 try
                 {
                     if (P2PSession.Instance.GetGameVisibility() == P2PGameVisibility.Singleplayer || ReplTools.AmIMaster())
                     {
                         if (SaveGame.m_State == SaveGame.State.None)
                         {
-                            if (AutoSave.DoSave())
+                            if (AutomaticSaves.DoSave())
                                 ShowHUDMessage("Game has been saved");
                             else
                                 ShowHUDMessage("Unable to save game, check logs");
@@ -342,7 +339,7 @@ namespace AutoSave
             {
                 using (var optionsScope = new GUILayout.VerticalScope(GUI.skin.box))
                 {
-                    GUILayout.Label("AutoSave mod only works if you are the host or in singleplayer mode.", GUI.skin.label);
+                    GUILayout.Label("AutomaticSaves mod only works if you are the host or in singleplayer mode.", GUI.skin.label);
                 }
             }
         }
@@ -456,7 +453,7 @@ namespace AutoSave
             InitData();
             ModKeybindingId = GetConfigurableKey();
             ModAPI.Log.Write($"[{ModName}:Start] {ModName} initialized.");
-            ModAPI.Log.Write($"[{ModName}:Start] {ModName} has been turned {(AutoSave.IsEnabled ? "on" : "off")}.");
+            ModAPI.Log.Write($"[{ModName}:Start] {ModName} has been turned {(AutomaticSaves.IsEnabled ? "on" : "off")}.");
         }
 
         private void OnGUI()
@@ -482,8 +479,8 @@ namespace AutoSave
                 if (!ShowUI)
                     EnableCursor(false);
             }
-            if (AutoSave.IsEnabled)
-                AutoSave.CheckTimerAndSave();
+            if (AutomaticSaves.IsEnabled)
+                AutomaticSaves.CheckTimerAndSave();
         }
 
         #endregion

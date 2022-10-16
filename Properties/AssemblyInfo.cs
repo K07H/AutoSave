@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Les informations générales relatives à un assembly dépendent de 
 // l'ensemble d'attributs suivant. Changez les valeurs de ces attributs pour modifier les informations
 // associées à un assembly.
-[assembly: AssemblyTitle("AutoSave")]
-[assembly: AssemblyDescription("AutoSave is a mod for Green Hell that will automatically save game every 10 minutes.")]
+[assembly: AssemblyTitle("AutomaticSaves")]
+[assembly: AssemblyDescription("AutomaticSaves is a mod for Green Hell that will automatically save game every 10 minutes.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("[Legendary Codings] OSubMarin")]
-[assembly: AssemblyProduct("AutoSave")]
+[assembly: AssemblyProduct("AutomaticSaves")]
 [assembly: AssemblyCopyright("Copyright © 2022 - All rights reserved")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
