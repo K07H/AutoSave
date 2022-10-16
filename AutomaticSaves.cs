@@ -436,11 +436,11 @@ namespace AutomaticSaves
             {
                 string savesFrequency = Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture);
                 File.WriteAllText(AutoSaveConfigurationFile, (IsEnabled ? "true" : "false") + "\r\n" + savesFrequency + "\r\n", System.Text.Encoding.UTF8);
-                ModAPI.Log.Write($"[{ModName}:LoadSettings] Settings were updated. Feature enabled: {(IsEnabled ? "true" : "false")}. Saves frequency: {savesFrequency} seconds).");
+                ModAPI.Log.Write($"[{ModName}:SaveSettings] Settings were updated. Feature enabled: {(IsEnabled ? "true" : "false")}. Saves frequency: {savesFrequency} seconds).");
             }
             catch (Exception ex)
             {
-                ModAPI.Log.Write($"[{ModName}:LoadSettings] Exception caught while updating settings: [{ex.ToString()}].");
+                ModAPI.Log.Write($"[{ModName}:SaveSettings] Exception caught while updating settings: [{ex.ToString()}].");
             }
         }
 
