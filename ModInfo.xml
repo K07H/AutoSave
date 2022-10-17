@@ -5,7 +5,7 @@
       <EN>Show settings</EN>
     </Name>
     <Description>
-      <EN>This key will allow you to display the settings window.</EN>
+      <EN>This shortcut is used to display the settings window.</EN>
     </Description>
   </Button>
   <Name>
@@ -14,5 +14,5 @@
   <Description>
     <EN>AutomaticSaves is a mod for Green Hell that will automatically save game every 10 minutes. You can change frequency in seconds and turn the feature OFF or ON at runtime. Author: OSubMarin</EN>
   </Description>
-  <Version>1.0.0.2</Version>
+  <Version>1.0.0.3</Version>
 </Mod>

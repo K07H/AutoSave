@@ -6,7 +6,11 @@ using UnityEngine;
 
 namespace AutomaticSaves
 {
-    /// <summary>AutomaticSaves is a mod for Green Hell that will automatically save game every 10 minutes.</summary>
+    /// <summary>
+    /// AutomaticSaves is a mod for Green Hell that will automatically save game every 10 minutes (with configurable frequency and on/off toggle).
+    /// Usage: Simply press the shortcut in game to open settings window (by default it is NumPad7).
+    /// Author: OSubMarin
+    /// </summary>
     public class AutomaticSaves : MonoBehaviour
     {
         #region Enums
@@ -40,9 +44,7 @@ namespace AutomaticSaves
 
         /// <summary>Game saving frequency (in seconds).</summary>
         private static long AutoSaveEvery = 600L;
-
         private static string AutoSaveFrequency = "600";
-
         private static string AutoSaveFrequencyOrig = "600";
 
         /// <summary>Path to ModAPI runtime configuration file (contains game shortcuts).</summary>
@@ -82,7 +84,7 @@ namespace AutomaticSaves
 
         #endregion
 
-        #region Statics
+        #region Static functions
 
         public static void ShowHUDMessage(string message) => ((HUDMessages)LocalHUDManager.GetHUD(typeof(HUDMessages))).AddMessage(message);
 
@@ -105,51 +107,63 @@ namespace AutomaticSaves
             obj.Show(show: true);
         }
 
-        private static bool DoSave()
+        private static void SaveReplicatedLogicalPlayerIfNeeded()
+        {
+            if (!ReplTools.IsPlayingAlone() && Player.Get() && Player.Get().GetPlayerComponent<ReplicatedLogicalPlayer>())
+            {
+                ReplicatedLogicalPlayer playerComponent = Player.Get().GetPlayerComponent<ReplicatedLogicalPlayer>();
+                playerComponent.RequestSave();
+                HUDTextChatHistory.AddMessage("SessionInfo_PlayerSaved", playerComponent.ReplGetOwner().GetDisplayName(), new Color?(playerComponent.GetPlayerColor()));
+            }
+        }
+
+        private static int DoSave()
         {
             string prefix = $"[{ModName}:DoSave] ";
             ModAPI.Log.Write(prefix + "Saving game...");
-            if (DialogsManager.Get().IsAnyStoryDialogPlaying())
+            try
             {
-                ModAPI.Log.Write(prefix + "Cannot save game because a story dialog is playing.");
-                return false;
-            }
-            if (MainLevel.Instance.m_SaveGameBlocked)
-            {
-                ModAPI.Log.Write(prefix + "Cannot save game because the feature is blocked.");
-                return false;
-            }
-            if (GreenHellGame.Instance.IsGamescom())
-            {
-                ModAPI.Log.Write(prefix + "Cannot save game because Gamescom is enabled.");
-                return false;
-            }
-            if (ChallengesManager.Get().IsChallengeActive())
-            {
-                ModAPI.Log.Write(prefix + "Cannot save game because a challenge is active.");
-                return false;
-            }
-            if (P2PSession.Instance.GetGameVisibility() == P2PGameVisibility.Singleplayer)
-                MenuInGameManager.Get().ShowScreen(typeof(SaveGameMenu));
-            else if (ReplTools.AmIMaster())
-            {
-                if (SaveGame.s_MainSaveName.StartsWith(SaveGame.MP_SLOT_NAME))
+                if (!(P2PSession.Instance.GetGameVisibility() == P2PGameVisibility.Singleplayer || ReplTools.AmIMaster()))
                 {
-                    SaveGame.Save();
-                    if (!ReplTools.IsPlayingAlone() && Player.Get() && Player.Get().GetPlayerComponent<ReplicatedLogicalPlayer>())
-                    {
-                        ReplicatedLogicalPlayer playerComponent = Player.Get().GetPlayerComponent<ReplicatedLogicalPlayer>();
-                        playerComponent.RequestSave();
-                        HUDTextChatHistory.AddMessage("SessionInfo_PlayerSaved", playerComponent.ReplGetOwner().GetDisplayName(), new Color?(playerComponent.GetPlayerColor()));
-                    }
+                    ModAPI.Log.Write(prefix + "Cannot save game because you are not the host or not in singleplayer mode.");
+                    return -2; // Not the host or not in singleplayer mode.
                 }
-                else
-                    MenuInGameManager.Get().ShowScreen(typeof(SaveGameMenu));
+                if (SaveGame.m_State != SaveGame.State.None)
+                {
+                    ModAPI.Log.Write(prefix + "Cannot save game because it is busy (State: " + SaveGame.m_State.ToString() + ").");
+                    return -3; // Busy state.
+                }
+                if (DialogsManager.Get().IsAnyStoryDialogPlaying())
+                {
+                    ModAPI.Log.Write(prefix + "Cannot save game because a story dialog is playing.");
+                    return -4; // A story dialog is playing.
+                }
+                if (MainLevel.Instance.m_SaveGameBlocked)
+                {
+                    ModAPI.Log.Write(prefix + "Cannot save game because the feature is blocked.");
+                    return -5; // Save feature is blocked.
+                }
+                if (GreenHellGame.Instance.IsGamescom())
+                {
+                    ModAPI.Log.Write(prefix + "Cannot save game because Gamescom is enabled.");
+                    return -6; // Gamescom is enabled.
+                }
+                if (ChallengesManager.Get().IsChallengeActive())
+                {
+                    ModAPI.Log.Write(prefix + "Cannot save game because a challenge is active.");
+                    return -7; // A challenge is active.
+                }
+                SaveGame.Save();
+                if (ReplTools.AmIMaster())
+                    SaveReplicatedLogicalPlayerIfNeeded();
+                ModAPI.Log.Write(prefix + "Game has been saved.");
+                return 0; // Success.
             }
-            else
-                Player.Get().GetPlayerComponent<ReplicatedLogicalPlayer>().RequestSave();
-            ModAPI.Log.Write(prefix + "Game has been saved.");
-            return true;
+            catch (Exception ex)
+            {
+                ModAPI.Log.Write(prefix + "Exception caught: [" + ex.ToString() + "].");
+                return -1; // Exception caught.
+            }
         }
 
         private static void CheckTimerAndSave()
@@ -160,30 +174,25 @@ namespace AutomaticSaves
             else if ((currTime - AutomaticSaves.LastAutoSaveTime) > AutoSaveEvery)
             {
                 AutomaticSaves.LastAutoSaveTime = currTime;
-                try
-                {
-                    if (P2PSession.Instance.GetGameVisibility() == P2PGameVisibility.Singleplayer || ReplTools.AmIMaster())
-                    {
-                        if (SaveGame.m_State == SaveGame.State.None)
-                        {
-                            if (AutomaticSaves.DoSave())
-                                ShowHUDMessage("Game has been saved");
-                            else
-                                ShowHUDMessage("Unable to save game, check logs");
-                        }
-                        else
-                            ModAPI.Log.Write($"[{ModName}:CheckTimerAndSave] Game has not been saved (State = {SaveGame.m_State.ToString()}).");
-                    }
-                    else
-                    {
-                        ModAPI.Log.Write($"[{ModName}:CheckTimerAndSave] Unable to save game (feature only available in singleplayer mode or if you are the host.");
-                        return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ModAPI.Log.Write($"[{ModName}:CheckTimerAndSave] Exception caught: [{ex.ToString()}].");
-                }
+                int retval = AutomaticSaves.DoSave();
+                if (retval == 0)
+                    ShowHUDMessage("Game has been saved");
+                else if (retval == -1)
+                    ShowHUDMessage("Unable to save game, check logs");
+                else if (retval == -2)
+                    ShowHUDMessage("Unable to save game (not the host or not in singleplayer mode)");
+                else if (retval == -3)
+                    ShowHUDMessage("Unable to save game (busy state)");
+                else if (retval == -4)
+                    ShowHUDMessage("Unable to save game (a story dialog is playing)");
+                else if (retval == -5)
+                    ShowHUDMessage("Unable to save game (feature is temporarily blocked)");
+                else if (retval == -6)
+                    ShowHUDMessage("Unable to save game (Gamescom is enabled)");
+                else if (retval == -7)
+                    ShowHUDMessage("Unable to save game (a challenge is active)");
+                else
+                    ShowHUDMessage("Unable to save game, check logs");
             }
         }
 
@@ -223,7 +232,7 @@ namespace AutomaticSaves
                                             parsed = parsed.Replace("NumPad", "Keypad").Replace("Oem", "");
                                             if (!string.IsNullOrEmpty(parsed) && Enum.TryParse<KeyCode>(parsed, true, out KeyCode parsedKey))
                                             {
-                                                ModAPI.Log.Write($"[{ModName}:GetConfigurableKey] On/Off shortcut has been parsed ({parsed}).");
+                                                ModAPI.Log.Write($"[{ModName}:GetConfigurableKey] \"Show settings\" shortcut has been parsed ({parsed}).");
                                                 return parsedKey;
                                             }
                                         }
@@ -234,11 +243,81 @@ namespace AutomaticSaves
                     }
                 }
             }
-            ModAPI.Log.Write($"[{ModName}:GetConfigurableKey] Could not parse On/Off shortcut. Using default value ({DefaultModKeybindingId.ToString()}).");
+            ModAPI.Log.Write($"[{ModName}:GetConfigurableKey] Could not parse \"Show settings\" shortcut. Using default value ({DefaultModKeybindingId.ToString()}).");
             return DefaultModKeybindingId;
         }
 
         #endregion
+
+        #region Methods
+
+        private void ParseSavesFrequency(string freq)
+        {
+            if (freq.Trim().All(x => char.IsDigit(x)))
+                if (int.TryParse(freq.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int savesFrequency) && savesFrequency > 0 && savesFrequency <= 2000000000)
+                {
+                    AutoSaveEvery = savesFrequency;
+                    AutoSaveFrequency = Convert.ToString(savesFrequency, CultureInfo.InvariantCulture);
+                    AutoSaveFrequencyOrig = AutoSaveFrequency;
+                }
+        }
+
+        private void LoadSettings()
+        {
+            try
+            {
+                if (File.Exists(AutoSaveConfigurationFile))
+                {
+                    string[] lines = File.ReadAllLines(AutoSaveConfigurationFile);
+                    if (lines != null && lines.Length > 0)
+                    {
+                        foreach (string line in lines)
+                            if (!string.IsNullOrWhiteSpace(line))
+                            {
+                                if (line.Contains("true", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    IsEnabled = true;
+                                    IsEnabledOrig = true;
+                                }
+                                else if (line.Contains("false", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    IsEnabled = false;
+                                    IsEnabledOrig = false;
+                                }
+                                else if (line.StartsWith("SavesFrequency=") && line.Length > "SavesFrequency=".Length)
+                                    ParseSavesFrequency(line.Substring("SavesFrequency=".Length));
+                                else if (line.Trim().All(x => char.IsDigit(x))) // Backward compatibility
+                                    ParseSavesFrequency(line);
+                            }
+                    }
+                }
+                else
+                    File.WriteAllText(AutoSaveConfigurationFile, (IsEnabled ? "IsEnabled=true" : "IsEnabled=false") + "\r\nSavesFrequency=" + Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture) + "\r\n", System.Text.Encoding.UTF8);
+                ModAPI.Log.Write($"[{ModName}:LoadSettings] Settings were loaded (Feature enabled: {(IsEnabled ? "true" : "false")}. Saves frequency: {Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture)} seconds).");
+            }
+            catch (Exception ex)
+            {
+                ModAPI.Log.Write($"[{ModName}:LoadSettings] Exception caught while loading settings: [{ex.ToString()}].");
+            }
+        }
+
+        private void SaveSettings()
+        {
+            try
+            {
+                string savesFrequency = Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture);
+                File.WriteAllText(AutoSaveConfigurationFile, (IsEnabled ? "IsEnabled=true" : "IsEnabled=false") + "\r\nSavesFrequency=" + savesFrequency + "\r\n", System.Text.Encoding.UTF8);
+                ModAPI.Log.Write($"[{ModName}:SaveSettings] Settings were updated (Feature enabled: {(IsEnabled ? "true" : "false")}. Saves frequency: {savesFrequency} seconds).");
+            }
+            catch (Exception ex)
+            {
+                ModAPI.Log.Write($"[{ModName}:SaveSettings] Exception caught while updating settings: [{ex.ToString()}].");
+            }
+        }
+
+        #endregion
+
+        #region UI methods
 
         private void InitWindow()
         {
@@ -260,11 +339,6 @@ namespace AutomaticSaves
         {
             LocalHUDManager = HUDManager.Get();
             LocalPlayer = Player.Get();
-        }
-
-        private void InitSkinUI()
-        {
-            GUI.skin = ModAPI.Interface.Skin;
         }
 
         private void InitModCraftingScreen(int windowID)
@@ -303,12 +377,12 @@ namespace AutomaticSaves
                         if (IsEnabled)
                         {
                             ShowHUDBigInfo(HUDBigInfoMessage($"{ModName} has been turned on (frequency: every {Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture)} seconds)", MessageType.Info, Color.green));
-                            ModAPI.Log.Write($"[{ModName}:Update] {ModName} has been turned on (frequency: every {Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture)} seconds).");
+                            ModAPI.Log.Write($"[{ModName}:ModOptionsBox] {ModName} has been turned on (frequency: every {Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture)} seconds).");
                         }
                         else
                         {
                             ShowHUDBigInfo(HUDBigInfoMessage($"{ModName} has been turned off", MessageType.Info, Color.red));
-                            ModAPI.Log.Write($"[{ModName}:Update] {ModName} has been turned off.");
+                            ModAPI.Log.Write($"[{ModName}:ModOptionsBox] {ModName} has been turned off.");
                         }
                         SaveSettings();
                     }
@@ -339,7 +413,9 @@ namespace AutomaticSaves
             {
                 using (var optionsScope = new GUILayout.VerticalScope(GUI.skin.box))
                 {
-                    GUILayout.Label("AutomaticSaves mod only works if you are the host or in singleplayer mode.", GUI.skin.label);
+                    GUI.color = Color.yellow;
+                    GUILayout.Label($"{ModName} mod only works if you are the host or in singleplayer mode.", GUI.skin.label);
+                    GUI.color = DefaultGuiColor;
                 }
             }
         }
@@ -383,66 +459,7 @@ namespace AutomaticSaves
             }
         }
 
-        private void ToggleShowUI()
-        {
-            ShowUI = !ShowUI;
-        }
-
-        private void LoadSettings()
-        {
-            try
-            {
-                if (File.Exists(AutoSaveConfigurationFile))
-                {
-                    string[] lines = File.ReadAllLines(AutoSaveConfigurationFile);
-                    if (lines != null && lines.Length > 0)
-                    {
-                        foreach (string line in lines)
-                            if (!string.IsNullOrWhiteSpace(line))
-                            {
-                                if (line.Contains("true", StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    IsEnabled = true;
-                                    IsEnabledOrig = true;
-                                }
-                                else if (line.Contains("false", StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    IsEnabled = false;
-                                    IsEnabledOrig = false;
-                                }
-                                else if (line.Trim().All(x => char.IsDigit(x)))
-                                    if (int.TryParse(line.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int savesFrequency) && savesFrequency > 0 && savesFrequency <= 2000000000)
-                                    {
-                                        AutoSaveEvery = savesFrequency;
-                                        AutoSaveFrequency = Convert.ToString(savesFrequency, CultureInfo.InvariantCulture);
-                                        AutoSaveFrequencyOrig = AutoSaveFrequency;
-                                    }
-                            }
-                    }
-                }
-                else
-                    File.WriteAllText(AutoSaveConfigurationFile, (IsEnabled ? "true" : "false") + "\r\n" + Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture) + "\r\n", System.Text.Encoding.UTF8);
-                ModAPI.Log.Write($"[{ModName}:LoadSettings] Settings were loaded (Feature enabled: {(IsEnabled ? "true" : "false")}. Saves frequency: {Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture)} seconds).");
-            }
-            catch (Exception ex)
-            {
-                ModAPI.Log.Write($"[{ModName}:LoadSettings] Exception caught while loading settings: [{ex.ToString()}].");
-            }
-        }
-
-        private void SaveSettings()
-        {
-            try
-            {
-                string savesFrequency = Convert.ToString((int)AutoSaveEvery, CultureInfo.InvariantCulture);
-                File.WriteAllText(AutoSaveConfigurationFile, (IsEnabled ? "true" : "false") + "\r\n" + savesFrequency + "\r\n", System.Text.Encoding.UTF8);
-                ModAPI.Log.Write($"[{ModName}:SaveSettings] Settings were updated (Feature enabled: {(IsEnabled ? "true" : "false")}. Saves frequency: {savesFrequency} seconds).");
-            }
-            catch (Exception ex)
-            {
-                ModAPI.Log.Write($"[{ModName}:SaveSettings] Exception caught while updating settings: [{ex.ToString()}].");
-            }
-        }
+        #endregion
 
         #region Unity methods
 
@@ -461,7 +478,7 @@ namespace AutomaticSaves
             if (ShowUI)
             {
                 InitData();
-                InitSkinUI();
+                GUI.skin = ModAPI.Interface.Skin;
                 InitWindow();
             }
         }
@@ -475,7 +492,7 @@ namespace AutomaticSaves
                     InitData();
                     EnableCursor(true);
                 }
-                ToggleShowUI();
+                ShowUI = !ShowUI;
                 if (!ShowUI)
                     EnableCursor(false);
             }
