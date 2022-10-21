@@ -61,19 +61,19 @@ namespace AutomaticSaves
         private static long LastAutoSaveTime = -1L;
 
         private static HUDManager LocalHUDManager = null;
-        private static Player LocalPlayer;
+        private static Player LocalPlayer = null;
 
         private static bool IsEnabled { get; set; } = true;
         private static bool IsEnabledOrig { get; set; } = true;
 
         private static readonly float ModScreenTotalWidth = 400f;
         private static readonly float ModScreenTotalHeight = 100f;
-        private static readonly float ModScreenMinWidth = 350f;
-        private static readonly float ModScreenMaxWidth = 400f;
+        private static readonly float ModScreenMinWidth = 400f;
+        private static readonly float ModScreenMaxWidth = 450f;
         private static readonly float ModScreenMinHeight = 50f;
         private static readonly float ModScreenMaxHeight = 150f;
 
-        public static Rect ModCraftingScreen = new Rect(ModScreenStartPositionX, ModScreenStartPositionY, ModScreenTotalWidth, ModScreenTotalHeight);
+        public static Rect AutomaticSavesScreen = new Rect(ModScreenStartPositionX, ModScreenStartPositionY, ModScreenTotalWidth, ModScreenTotalHeight);
 
         private static float ModScreenStartPositionX { get; set; } = Screen.width / 7f;
         private static float ModScreenStartPositionY { get; set; } = Screen.height / 7f;
@@ -322,10 +322,10 @@ namespace AutomaticSaves
         private void InitWindow()
         {
             int wid = GetHashCode();
-            ModCraftingScreen = GUILayout.Window(wid,
-                ModCraftingScreen,
-                InitModCraftingScreen,
-                ModName,
+            AutomaticSavesScreen = GUILayout.Window(wid,
+                AutomaticSavesScreen,
+                InitAutomaticSavesScreen,
+                "Automatic Saves mod v1.0.0.4, by OSubMarin",
                 GUI.skin.window,
                 GUILayout.ExpandWidth(true),
                 GUILayout.MinWidth(ModScreenMinWidth),
@@ -341,10 +341,10 @@ namespace AutomaticSaves
             LocalPlayer = Player.Get();
         }
 
-        private void InitModCraftingScreen(int windowID)
+        private void InitAutomaticSavesScreen(int windowID)
         {
-            ModScreenStartPositionX = ModCraftingScreen.x;
-            ModScreenStartPositionY = ModCraftingScreen.y;
+            ModScreenStartPositionX = AutomaticSavesScreen.x;
+            ModScreenStartPositionY = AutomaticSavesScreen.y;
 
             using (var modContentScope = new GUILayout.VerticalScope(GUI.skin.box))
             {
@@ -357,10 +357,10 @@ namespace AutomaticSaves
 
         private void ScreenMenuBox()
         {
-            if (GUI.Button(new Rect(ModCraftingScreen.width - 40f, 0f, 20f, 20f), "-", GUI.skin.button))
+            if (GUI.Button(new Rect(AutomaticSavesScreen.width - 40f, 0f, 20f, 20f), "-", GUI.skin.button))
                 CollapseWindow();
 
-            if (GUI.Button(new Rect(ModCraftingScreen.width - 20f, 0f, 20f, 20f), "X", GUI.skin.button))
+            if (GUI.Button(new Rect(AutomaticSavesScreen.width - 20f, 0f, 20f, 20f), "X", GUI.skin.button))
                 CloseWindow();
         }
 
@@ -424,12 +424,12 @@ namespace AutomaticSaves
         {
             if (!IsMinimized)
             {
-                ModCraftingScreen = new Rect(ModScreenStartPositionX, ModScreenStartPositionY, ModScreenTotalWidth, ModScreenMinHeight);
+                AutomaticSavesScreen = new Rect(ModScreenStartPositionX, ModScreenStartPositionY, ModScreenTotalWidth, ModScreenMinHeight);
                 IsMinimized = true;
             }
             else
             {
-                ModCraftingScreen = new Rect(ModScreenStartPositionX, ModScreenStartPositionY, ModScreenTotalWidth, ModScreenTotalHeight);
+                AutomaticSavesScreen = new Rect(ModScreenStartPositionX, ModScreenStartPositionY, ModScreenTotalWidth, ModScreenTotalHeight);
                 IsMinimized = false;
             }
             InitWindow();
