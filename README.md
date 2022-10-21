@@ -19,7 +19,7 @@ Note that this mod only works if you are the host or in singleplayer mode.
 Copy the .mod file inside directory "__[...]/modapi/mods/GH/__". Then launch __ModAPI.exe__, select "AutomaticSaves" in the left menu and click "Launch the game".
 
 ### If you don't have ModAPI yet:
-Go to [https://modapi.survivetheforest.net/game/GH/](https://modapi.survivetheforest.net/game/GH/), check "AutomaticSaves" from the mods list and hit "Download". Then extract the archive, launch __ModAPI.exe__, select "AutomaticSaves" in the left menu and click "Launch the game".
+Go to [https://modapi.survivetheforest.net/game/GH/](https://modapi.survivetheforest.net/game/GH/), check "Automatic Saves" from the mods list and hit "Download". Then extract the archive, launch __ModAPI.exe__, select "AutomaticSaves" in the left menu and click "Launch the game".
 
 ----
 
@@ -31,3 +31,9 @@ Simply press the shortcut key to open the settings window (by default it is __Nu
 ## Preview
 [https://i.imgur.com/D6mq0X7.png](https://i.imgur.com/D6mq0X7.png)
 ![Automatic Saves preview](https://i.imgur.com/D6mq0X7.png)
+
+----
+
+## Support
+You can get help from the ModAPI community at [https://discord.gg/VAMuXyd](https://discord.gg/VAMuXyd) or you can contact me on Discord if needed (OSubMarin#0460).
+
